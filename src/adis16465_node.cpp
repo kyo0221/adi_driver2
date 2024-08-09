@@ -75,6 +75,9 @@ ImuNode::ImuNode()
   }
   // Bias estimate service
 
+  bias_srv_ = this->create_service<std_srvs::srv::Trigger>(
+    "bias_estimate", std::bind(&ImuNode::bias_estimate, this, std::placeholders::_1, std::placeholders::_2));
+
   while (!is_opened()) {
     RCLCPP_WARN(this->get_logger(), "Keep trying to open the device in 1 second period...");
     sleep(1);
@@ -85,6 +88,24 @@ ImuNode::ImuNode()
 }
 
 ImuNode::~ImuNode() {imu_->closePort();}
+
+bool ImuNode::bias_estimate(
+  const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
+  const std::shared_ptr<std_srvs::srv::Trigger::Response> response)
+{
+  RCLCPP_INFO(this->get_logger(), "bias_estimate");
+
+  if (imu.bias_correction_update() < 0){
+    response->success = false;
+    response->message = "Bias correction update failed";
+
+    return false;
+  }
+    response->success = true;
+    response->message = "Success";
+
+    return true;
+}
 
 /**
  * @brief Check if the device is opened

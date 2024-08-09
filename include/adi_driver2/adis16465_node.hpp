@@ -31,6 +31,7 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "rclcpp/rclcpp.hpp"
+#include "std_srvs/srv/trigger.hpp"
 #include "sensor_msgs/msg/imu.hpp"
 #include "sensor_msgs/msg/temperature.hpp"
 #include <string>
@@ -42,8 +43,15 @@ namespace adi_driver2
 class ImuNode : public rclcpp::Node
 {
 public:
+  Adis16470 imu;
+
   ImuNode();
   ~ImuNode();
+
+  bool bias_estimate(
+    const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
+    const std::shared_ptr<std_srvs::srv::Trigger::Response> response
+  );
 
   bool is_opened(void);
   void open(void);
@@ -56,6 +64,8 @@ public:
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_data_pub_;
   rclcpp::Publisher<sensor_msgs::msg::Temperature>::SharedPtr temp_data_pub_;
   //   ros::ServiceServer bias_srv_;
+
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr bias_srv_;
 
   rclcpp::TimerBase::SharedPtr loop_timer_;
 
